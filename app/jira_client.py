@@ -82,6 +82,23 @@ class JiraClient:
         response.raise_for_status()
 
         return True
+    def get_editable_fields(self, issue_key):
+
+        url = (
+            f"{JIRA_BASE_URL}"
+            f"/rest/api/3/issue/{issue_key}/editmeta"
+        )
+
+        response = requests.get(
+            url,
+            headers=self.headers,
+            auth=self.auth
+        )
+
+        response.raise_for_status()
+
+        return response.json()
+
 
     def update_field(
         self,
