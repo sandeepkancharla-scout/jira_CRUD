@@ -161,11 +161,57 @@ class JiraClient:
         return response.json()
 
     def update_field(
-        self,
-        issue_key,
-        field_name,
-        field_value
-    ):
+    self,
+    issue_key,
+    field_name,
+    field_value
+):
+
+    if field_name == "labels":
+
+        payload = {
+            "fields": {
+                "labels": [
+                    label.strip()
+                    for label in field_value.split(",")
+                    if label.strip()
+                ]
+            }
+        }
+
+    elif field_name == "priority":
+
+        payload = {
+            "fields": {
+                "priority": {
+                    "name": field_value
+                }
+            }
+        }
+
+    elif field_name == "description":
+
+        payload = {
+            "fields": {
+                "description": {
+                    "type": "doc",
+                    "version": 1,
+                    "content": [
+                        {
+                            "type": "paragraph",
+                            "content": [
+                                {
+                                    "type": "text",
+                                    "text": field_value
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        }
+
+    else:
 
         payload = {
             "fields": {
@@ -173,26 +219,23 @@ class JiraClient:
             }
         }
 
-        url = (
-            f"{JIRA_BASE_URL}"
-            f"/rest/api/3/issue/{issue_key}"
-        )
+    url = (
+        f"{JIRA_BASE_URL}"
+        f"/rest/api/3/issue/{issue_key}"
+    )
 
-        response = requests.put(
-            url,
-            headers=self.headers,
-            auth=self.auth,
-            json=payload
-        )
+    response = requests.put(
+        url,
+        headers=self.headers,
+        auth=self.auth,
+        json=payload
+    )
 
-        print(
-            "Status Code:",
-            response.status_code
-        )
+    print("Status Code:", response.status_code)
 
-        if response.text:
-            print(response.text)
+    if response.text:
+        print(response.text)
 
-        response.raise_for_status()
+    response.raise_for_status()
 
-        return True
+    return True
