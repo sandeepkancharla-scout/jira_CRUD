@@ -38,7 +38,30 @@ class JiraClient:
 
         return response.json()
 
-    def get_transitions(self, issue_key):
+    def get_editable_fields(
+        self,
+        issue_key
+    ):
+
+        url = (
+            f"{JIRA_BASE_URL}"
+            f"/rest/api/3/issue/{issue_key}/editmeta"
+        )
+
+        response = requests.get(
+            url,
+            headers=self.headers,
+            auth=self.auth
+        )
+
+        response.raise_for_status()
+
+        return response.json()
+
+    def get_transitions(
+        self,
+        issue_key
+    ):
 
         url = (
             f"{JIRA_BASE_URL}"
@@ -82,23 +105,60 @@ class JiraClient:
         response.raise_for_status()
 
         return True
-    def get_editable_fields(self, issue_key):
+
+    def create_subtask(
+        self,
+        parent_key,
+        summary
+    ):
+
+        parent_issue = self.get_issue(
+            parent_key
+        )
+
+        project_key = (
+            parent_issue["fields"]
+            ["project"]["key"]
+        )
+
+        payload = {
+            "fields": {
+                "project": {
+                    "key": project_key
+                },
+                "parent": {
+                    "key": parent_key
+                },
+                "summary": summary,
+                "issuetype": {
+                    "name": "Sub-task"
+                }
+            }
+        }
 
         url = (
             f"{JIRA_BASE_URL}"
-            f"/rest/api/3/issue/{issue_key}/editmeta"
+            f"/rest/api/3/issue"
         )
 
-        response = requests.get(
+        response = requests.post(
             url,
             headers=self.headers,
-            auth=self.auth
+            auth=self.auth,
+            json=payload
         )
+
+        print(
+            "Status Code:",
+            response.status_code
+        )
+
+        if response.text:
+            print(response.text)
 
         response.raise_for_status()
 
         return response.json()
-
 
     def update_field(
         self,
@@ -107,16 +167,16 @@ class JiraClient:
         field_value
     ):
 
-        url = (
-            f"{JIRA_BASE_URL}"
-            f"/rest/api/3/issue/{issue_key}"
-        )
-
         payload = {
             "fields": {
                 field_name: field_value
             }
         }
+
+        url = (
+            f"{JIRA_BASE_URL}"
+            f"/rest/api/3/issue/{issue_key}"
+        )
 
         response = requests.put(
             url,
@@ -125,7 +185,10 @@ class JiraClient:
             json=payload
         )
 
-        print("Status Code:", response.status_code)
+        print(
+            "Status Code:",
+            response.status_code
+        )
 
         if response.text:
             print(response.text)
@@ -133,20 +196,3 @@ class JiraClient:
         response.raise_for_status()
 
         return True
-
-    def test_connection(self):
-
-        url = (
-            f"{JIRA_BASE_URL}"
-            f"/rest/api/3/myself"
-        )
-
-        response = requests.get(
-            url,
-            headers=self.headers,
-            auth=self.auth
-        )
-
-        response.raise_for_status()
-
-        return response.json()
