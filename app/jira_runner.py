@@ -268,6 +268,31 @@ elif operation == "status":
         f"New Status: "
         f"{updated_issue['fields']['status']['name']}"
     )
+elif operation == "create":
+
+    if not field_value:
+
+        raise Exception(
+            "Sub-task summary is required."
+        )
+
+    result = jira.create_subtask(
+        ticket_id,
+        field_value
+    )
+
+    print(
+        "\n✅ SUBTASK CREATED"
+    )
+
+    print(
+        f"Parent: {ticket_id}"
+    )
+
+    print(
+        f"New Issue: "
+        f"{result['key']}"
+    )
 
 elif operation == "update":
 
