@@ -16,7 +16,9 @@ if operation == "read":
 
     issue = jira.get_issue(ticket_id)
 
-    print("\nTicket Details")
+    print("\n===== TICKET DETAILS =====")
+
+    print(f"Key: {issue['key']}")
 
     print(
         f"Summary: "
@@ -26,6 +28,34 @@ if operation == "read":
     print(
         f"Status: "
         f"{issue['fields']['status']['name']}"
+    )
+
+    priority = issue["fields"].get(
+        "priority"
+    )
+
+    assignee = issue["fields"].get(
+        "assignee"
+    )
+
+    labels = issue["fields"].get(
+        "labels",
+        []
+    )
+
+    print(
+        f"Priority: "
+        f"{priority['name'] if priority else 'Not Set'}"
+    )
+
+    print(
+        f"Assignee: "
+        f"{assignee['displayName'] if assignee else 'Unassigned'}"
+    )
+
+    print(
+        f"Labels: "
+        f"{', '.join(labels) if labels else 'None'}"
     )
 
 elif operation == "validate":
