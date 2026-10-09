@@ -117,8 +117,31 @@ elif operation == "update":
 
 elif operation == "status":
 
+    if not field_value:
+
+        raise ValueError(
+            "FIELD_VALUE is required."
+        )
+
+    issue = jira.get_issue(ticket_id)
+
+    current_status = (
+        issue["fields"]["status"]["name"]
+    )
+
+    print(
+        f"\nCurrent Status: "
+        f"{current_status}"
+    )
+
     transitions = (
-        jira.get_transitions(ticket_id)
+        jira.get_transitions(
+            ticket_id
+        )
+    )
+
+    print(
+        "\n===== AVAILABLE TRANSITIONS ====="
     )
 
     transition_id = None
@@ -126,6 +149,12 @@ elif operation == "status":
     for transition in transitions[
         "transitions"
     ]:
+
+        print(
+            f"{transition['id']} "
+            f"-> "
+            f"{transition['name']}"
+        )
 
         if (
             transition["name"]
@@ -138,14 +167,12 @@ elif operation == "status":
                 transition["id"]
             )
 
-            break
-
     if not transition_id:
 
         raise Exception(
-            f"Status "
-            f"{field_value} "
-            f"not found"
+            f"Transition "
+            f"'{field_value}' "
+            f"is not available."
         )
 
     jira.change_status(
@@ -153,7 +180,27 @@ elif operation == "status":
         transition_id
     )
 
+    updated_issue = (
+        jira.get_issue(
+            ticket_id
+        )
+    )
+
+    new_status = (
+        updated_issue["fields"]
+        ["status"]["name"]
+    )
+
     print(
-        f"Status changed to "
-        f"{field_value}"
+        f"\n✅ Status Updated"
+    )
+
+    print(
+        f"Old Status: "
+        f"{current_status}"
+    )
+
+    print(
+        f"New Status: "
+        f"{new_status}"
     )
