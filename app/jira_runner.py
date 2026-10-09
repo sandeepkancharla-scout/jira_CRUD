@@ -296,13 +296,67 @@ elif operation == "create":
 
 elif operation == "update":
 
+    if not field_name:
+
+        raise Exception(
+            "Field Name is required."
+        )
+
+    if not field_value:
+
+        raise Exception(
+            "Field Value is required."
+        )
+
+    metadata = (
+        jira.get_editable_fields(
+            ticket_id
+        )
+    )
+
+    editable_fields = metadata[
+        "fields"
+    ]
+
+    if field_name not in editable_fields:
+
+        raise Exception(
+            f"{field_name} is not editable."
+        )
+
+    jira.update_field(
+        ticket_id,
+        field_name,
+        field_value
+    )
+
     print(
-        "\nUpdate operation "
-        "will be implemented next."
+        "\n✅ FIELD UPDATED"
     )
 
-else:
-
-    raise Exception(
-        "Invalid operation."
+    print(
+        f"Field: {field_name}"
     )
+
+    print(
+        f"Value: {field_value}"
+    )
+
+    issue = jira.get_issue(
+        ticket_id
+    )
+
+    print(
+        "\nUpdated Ticket"
+    )
+
+    print(
+        f"Summary: "
+        f"{issue['fields']['summary']}"
+    )
+
+    print(
+        f"Status: "
+        f"{issue['fields']['status']['name']}"
+    )
+
