@@ -18,6 +18,7 @@ on:
           - get_fields
           - status
           - update
+          - create
 
       field_name:
         description: "Field Name"
