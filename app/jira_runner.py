@@ -4,21 +4,44 @@ from jira_client import JiraClient
 
 jira = JiraClient()
 
-ticket_id = os.getenv("TICKET_ID")
-operation = os.getenv("OPERATION")
-field_name = os.getenv("FIELD_NAME")
-field_value = os.getenv("FIELD_VALUE")
+ticket_id = os.getenv(
+    "TICKET_ID"
+)
 
-print(f"Ticket: {ticket_id}")
-print(f"Operation: {operation}")
+operation = os.getenv(
+    "OPERATION"
+)
+
+field_name = os.getenv(
+    "FIELD_NAME"
+)
+
+field_value = os.getenv(
+    "FIELD_VALUE"
+)
+
+print(
+    f"Ticket: {ticket_id}"
+)
+
+print(
+    f"Operation: {operation}"
+)
+
 
 if operation == "read":
 
-    issue = jira.get_issue(ticket_id)
+    issue = jira.get_issue(
+        ticket_id
+    )
 
-    print("\n===== TICKET DETAILS =====")
+    print(
+        "\n===== TICKET DETAILS ====="
+    )
 
-    print(f"Key: {issue['key']}")
+    print(
+        f"Key: {issue['key']}"
+    )
 
     print(
         f"Summary: "
@@ -60,73 +83,96 @@ if operation == "read":
 
 elif operation == "validate":
 
-    issue = jira.get_issue(ticket_id)
+    issue = jira.get_issue(
+        ticket_id
+    )
 
     fields = issue["fields"]
 
-    errors = []
+    validation_errors = []
 
-    if not fields.get("summary"):
-        errors.append("Summary Missing")
+    if not fields.get(
+        "summary"
+    ):
+        validation_errors.append(
+            "Summary Missing"
+        )
 
-    if not fields.get("priority"):
-        errors.append("Priority Missing")
+    if not fields.get(
+        "priority"
+    ):
+        validation_errors.append(
+            "Priority Missing"
+        )
 
-    if not fields.get("assignee"):
-        errors.append("Assignee Missing")
+    if not fields.get(
+        "assignee"
+    ):
+        validation_errors.append(
+            "Assignee Missing"
+        )
 
-    if errors:
+    if validation_errors:
 
-        print("Validation Failed")
+        print(
+            "\nValidation Failed"
+        )
 
-        for error in errors:
-            print(error)
+        for error in (
+            validation_errors
+        ):
+
+            print(
+                f"- {error}"
+            )
 
     else:
 
-        print("Validation Passed")
+        print(
+            "\nValidation Passed"
+        )
 
 elif operation == "get_fields":
 
     metadata = (
-        jira.get_editable_fields(ticket_id)
+        jira.get_editable_fields(
+            ticket_id
+        )
     )
 
-    print("\nEditable Fields")
+    print(
+        "\n===== EDITABLE FIELDS ====="
+    )
 
     for key, value in metadata[
         "fields"
     ].items():
 
-        print(
-            f"{key} -> "
-            f"{value['name']}"
+        schema = value.get(
+            "schema",
+            {}
         )
 
-elif operation == "update":
+        field_type = schema.get(
+            "type",
+            "unknown"
+        )
 
-    jira.update_field(
-        ticket_id,
-        field_name,
-        field_value
-    )
-
-    print(
-        f"{field_name} updated successfully"
-    )
+        print(
+            f"{key:<25}"
+            f"| {value['name']:<30}"
+            f"| {field_type}"
+        )
 
 elif operation == "status":
 
-    if not field_value:
-
-        raise ValueError(
-            "FIELD_VALUE is required."
-        )
-
-    issue = jira.get_issue(ticket_id)
+    issue = jira.get_issue(
+        ticket_id
+    )
 
     current_status = (
-        issue["fields"]["status"]["name"]
+        issue["fields"]
+        ["status"]["name"]
     )
 
     print(
@@ -144,17 +190,40 @@ elif operation == "status":
         "\n===== AVAILABLE TRANSITIONS ====="
     )
 
-    transition_id = None
+    available_transitions = []
 
     for transition in transitions[
         "transitions"
     ]:
+
+        available_transitions.append(
+            transition["name"]
+        )
 
         print(
             f"{transition['id']} "
             f"-> "
             f"{transition['name']}"
         )
+
+    if not field_value:
+
+        print(
+            "\nNo target status supplied."
+        )
+
+        print(
+            "Run workflow again and provide "
+            "FIELD_VALUE."
+        )
+
+        exit(0)
+
+    transition_id = None
+
+    for transition in transitions[
+        "transitions"
+    ]:
 
         if (
             transition["name"]
@@ -167,12 +236,12 @@ elif operation == "status":
                 transition["id"]
             )
 
+            break
+
     if not transition_id:
 
         raise Exception(
-            f"Transition "
-            f"'{field_value}' "
-            f"is not available."
+            f"Invalid status."
         )
 
     jira.change_status(
@@ -186,13 +255,8 @@ elif operation == "status":
         )
     )
 
-    new_status = (
-        updated_issue["fields"]
-        ["status"]["name"]
-    )
-
     print(
-        f"\n✅ Status Updated"
+        "\n✅ STATUS UPDATED"
     )
 
     print(
@@ -202,5 +266,18 @@ elif operation == "status":
 
     print(
         f"New Status: "
-        f"{new_status}"
+        f"{updated_issue['fields']['status']['name']}"
+    )
+
+elif operation == "update":
+
+    print(
+        "\nUpdate operation "
+        "will be implemented next."
+    )
+
+else:
+
+    raise Exception(
+        "Invalid operation."
     )

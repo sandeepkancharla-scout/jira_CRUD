@@ -16,8 +16,8 @@ on:
           - read
           - validate
           - get_fields
-          - update
           - status
+          - update
 
       field_name:
         description: "Field Name"
